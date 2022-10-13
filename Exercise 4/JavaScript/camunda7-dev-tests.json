@@ -1,0 +1,547 @@
+{
+	"info": {
+		"_postman_id": "fa1d5e47-375a-419a-aa13-9fc6f2c45ec1",
+		"name": "camunda7-dev-tests",
+		"description": "Example to test a process with Postman",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "deploy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"var jsonData = pm.response.json();",
+							"var deploymentId = jsonData.id;",
+							"console.log(\"Deployment id: \" + deploymentId);",
+							"pm.collectionVariables.set(\"deploymentId\", deploymentId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "deployment-name",
+							"value": "test-suite",
+							"type": "text"
+						},
+						{
+							"key": "deployment-source",
+							"value": "postman-tests",
+							"type": "text"
+						},
+						{
+							"key": "process-model",
+							"type": "file",
+							"src": "/Users/david.crowley/Documents/Training/Dev7 Training/camunda7-training-exercises/Exercise 4/JavaScript/PaymentProcess.bpmn"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/engine-rest/deployment/create",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"engine-rest",
+						"deployment",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "start process instance",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"var processInstanceId = jsonData.id;",
+							"console.log(\"Process instance id: \" + processInstanceId);",
+							"pm.collectionVariables.set(\"processInstanceId\", processInstanceId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"businessKey\": \"{{businessKey}}\",\r\n  \"variables\": {\r\n    \"orderTotal\": {\r\n      \"value\": 45.99,\r\n      \"type\": \"Double\"\r\n    },\r\n    \"customerCredit\": {\r\n      \"value\": 30.00,\r\n      \"type\": \"Double\"\r\n    }\r\n  }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/engine-rest/process-definition/key/{{processDefinitionKey}}/start",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"engine-rest",
+						"process-definition",
+						"key",
+						"{{processDefinitionKey}}",
+						"start"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "waiting at service task",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"assert external task Deduct customer credit\", function () {",
+							"  var jsonData = pm.response.json();",
+							"  console.log(jsonData);",
+							"  pm.expect(jsonData[0].topicName).to.eql(\"creditDeduction\");",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"var externalTaskId = jsonData[0].id;",
+							"console.log(\"got external task id: \" + externalTaskId);",
+							"pm.collectionVariables.set(\"externalTaskId\", externalTaskId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/engine-rest/external-task?processInstanceId={{processInstanceId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"engine-rest",
+						"external-task"
+					],
+					"query": [
+						{
+							"key": "processInstanceId",
+							"value": "{{processInstanceId}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "fetch and lock",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"external task id match\", function () {",
+							"  var externalTaskId = pm.collectionVariables.get(\"externalTaskId\");",
+							"  console.log(\"External task fetched: \" + externalTaskId);",
+							"  var jsonData = pm.response.json();",
+							"  pm.expect(jsonData[0].id).to.eql(externalTaskId);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"workerId\": \"postman test\",\n  \"maxTasks\": 1,\n  \"topics\": [\n    {\n      \"topicName\": \"creditDeduction\",\n      \"lockDuration\": 10000\n    }\n  ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/engine-rest/external-task/fetchAndLock",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"engine-rest",
+						"external-task",
+						"fetchAndLock"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "complete service task",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"  pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"workerId\": \"postman test\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/engine-rest/external-task/{{externalTaskId}}/complete",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"engine-rest",
+						"external-task",
+						"{{externalTaskId}}",
+						"complete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "waiting at service task",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"assert external task Charge credit card\", function () {",
+							"  var jsonData = pm.response.json();",
+							"  console.log(jsonData);",
+							"  pm.expect(jsonData[0].topicName).to.eql(\"creditCardCharging\");",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"var externalTaskId = jsonData[0].id;",
+							"console.log(\"got external task id: \" + externalTaskId);",
+							"pm.collectionVariables.set(\"externalTaskId\", externalTaskId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/engine-rest/external-task?processInstanceId={{processInstanceId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"engine-rest",
+						"external-task"
+					],
+					"query": [
+						{
+							"key": "processInstanceId",
+							"value": "{{processInstanceId}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "fetch and lock",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"external task id match\", function () {",
+							"  var externalTaskId = pm.collectionVariables.get(\"externalTaskId\");",
+							"  console.log(\"External task fetched: \" + externalTaskId);",
+							"  var jsonData = pm.response.json();",
+							"  pm.expect(jsonData[0].id).to.eql(externalTaskId);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"workerId\": \"postman test\",\n  \"maxTasks\": 1,\n  \"topics\": [\n    {\n      \"topicName\": \"creditCardCharging\",\n      \"lockDuration\": 10000\n    }\n  ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/engine-rest/external-task/fetchAndLock",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"engine-rest",
+						"external-task",
+						"fetchAndLock"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "complete service task",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"  pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"workerId\": \"postman test\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/engine-rest/external-task/{{externalTaskId}}/complete",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"engine-rest",
+						"external-task",
+						"{{externalTaskId}}",
+						"complete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "process instance finished",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"state is completed\", function () {",
+							"  var jsonData = pm.response.json();",
+							"  pm.expect(jsonData.state).to.eql(\"COMPLETED\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/engine-rest/history/process-instance/{{processInstanceId}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"engine-rest",
+						"history",
+						"process-instance",
+						"{{processInstanceId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete deployment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"  pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/engine-rest/deployment/{{deploymentId}}?cascade=true",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"engine-rest",
+						"deployment",
+						"{{deploymentId}}"
+					],
+					"query": [
+						{
+							"key": "cascade",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "deploymentId",
+			"value": "f6b3c7a8-f6c5-11ec-8484-acde48001122"
+		},
+		{
+			"key": "processInstanceId",
+			"value": "f6bec42b-f6c5-11ec-8484-acde48001122"
+		},
+		{
+			"key": "externalTaskId",
+			"value": "f6d02959-f6c5-11ec-8484-acde48001122"
+		},
+		{
+			"key": "processDefinitionKey",
+			"value": "PaymentProcess"
+		},
+		{
+			"key": "businessKey",
+			"value": "Postman Test 1"
+		}
+	]
+}

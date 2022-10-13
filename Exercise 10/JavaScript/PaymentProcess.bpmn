@@ -35,7 +35,7 @@
     </bpmn:startEvent>
     <bpmn:endEvent id="PaymentCompletedEvent" name="Payment Completed">
       <bpmn:incoming>Flow_0esyvqc</bpmn:incoming>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_1pim2b6" messageRef="Message_3sl7hd1" camunda:type="external" camunda:topic="paymentCompletion" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1pim2b6" camunda:type="external" camunda:topic="paymentCompletion" />
     </bpmn:endEvent>
     <bpmn:boundaryEvent id="Event_1tabma4" name="Charging Failed" attachedToRef="ChargeCreditCardTask">
       <bpmn:outgoing>Flow_1694twp</bpmn:outgoing>
@@ -44,7 +44,7 @@
     <bpmn:sequenceFlow id="Flow_1694twp" sourceRef="Event_1tabma4" targetRef="CreditRestoredEvent" />
     <bpmn:endEvent id="PaymentFailedEvent" name="Payment Failed">
       <bpmn:incoming>Flow_1jedhoe</bpmn:incoming>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_1uzyxwq" messageRef="Message_3sl7hd1" camunda:type="external" camunda:topic="paymentCompletion" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1uzyxwq" camunda:type="external" camunda:topic="paymentCompletion" />
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1jedhoe" sourceRef="CreditRestoredEvent" targetRef="PaymentFailedEvent" />
     <bpmn:intermediateThrowEvent id="CreditRestoredEvent" name="Customer Credit Restored.">
@@ -61,13 +61,8 @@
   <bpmn:message id="Message_16no202" name="paymentRequestMessage" />
   <bpmn:error id="Error_0pewlkm" name="Charging failed" errorCode="creditCardChargeError" />
   <bpmn:message id="Message_3rs306q" name="Message_3rs306q" />
-  <bpmn:message id="Message_3sl7hd1" name="paymentCompletion" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="PaymentProcess">
-      <bpmndi:BPMNEdge id="Flow_1jedhoe_di" bpmnElement="Flow_1jedhoe">
-        <di:waypoint x="888" y="100" />
-        <di:waypoint x="992" y="100" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1694twp_di" bpmnElement="Flow_1694twp">
         <di:waypoint x="700" y="199" />
         <di:waypoint x="700" y="100" />
@@ -105,31 +100,32 @@
         <di:waypoint x="215" y="257" />
         <di:waypoint x="310" y="257" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Gateway_08b9bsy_di" bpmnElement="Gateway_08b9bsy" isMarkerVisible="true">
-        <dc:Bounds x="505" y="232" width="50" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="488" y="202" width="84" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_146t6fq_di" bpmnElement="Gateway_146t6fq" isMarkerVisible="true">
-        <dc:Bounds x="845" y="232" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1f4x845_di" bpmnElement="DeductCreditTask">
-        <dc:Bounds x="310" y="217" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0xce1fs_di" bpmnElement="ChargeCreditCardTask">
-        <dc:Bounds x="650" y="217" width="100" height="80" />
-      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1jedhoe_di" bpmnElement="Flow_1jedhoe">
+        <di:waypoint x="888" y="100" />
+        <di:waypoint x="992" y="100" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_1cukzy9_di" bpmnElement="StartEvent_1">
         <dc:Bounds x="179" y="239" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="170" y="282" width="54" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0vlzn1n_di" bpmnElement="PaymentCompletedEvent">
-        <dc:Bounds x="992" y="239" width="36" height="36" />
+      <bpmndi:BPMNShape id="Activity_1f4x845_di" bpmnElement="DeductCreditTask">
+        <dc:Bounds x="310" y="217" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_08b9bsy_di" bpmnElement="Gateway_08b9bsy" isMarkerVisible="true">
+        <dc:Bounds x="505" y="232" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="983" y="282" width="54" height="27" />
+          <dc:Bounds x="488" y="202" width="84" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0dfrgmv_di" bpmnElement="RestoreCreditTask">
+        <dc:Bounds x="310" y="370" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1v3wo1r_di" bpmnElement="CreditRestoredEvent">
+        <dc:Bounds x="852" y="82" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="829" y="125" width="82" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0y5fnel_di" bpmnElement="PaymentFailedEvent">
@@ -138,15 +134,22 @@
           <dc:Bounds x="972" y="125" width="77" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1v3wo1r_di" bpmnElement="CreditRestoredEvent">
-        <dc:Bounds x="852" y="82" width="36" height="36" />
+      <bpmndi:BPMNShape id="Activity_0xce1fs_di" bpmnElement="ChargeCreditCardTask">
+        <dc:Bounds x="650" y="217" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_146t6fq_di" bpmnElement="Gateway_146t6fq" isMarkerVisible="true">
+        <dc:Bounds x="845" y="232" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0vlzn1n_di" bpmnElement="PaymentCompletedEvent">
+        <dc:Bounds x="992" y="239" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="829" y="125" width="82" height="27" />
+          <dc:Bounds x="983" y="282" width="54" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0dfrgmv_di" bpmnElement="RestoreCreditTask">
-        <dc:Bounds x="310" y="370" width="100" height="80" />
-      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_1mhrbk0_di" bpmnElement="Association_1mhrbk0">
+        <di:waypoint x="360" y="315" />
+        <di:waypoint x="360" y="370" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Event_1x33k7j_di" bpmnElement="Event_05men7n">
         <dc:Bounds x="342" y="279" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -156,10 +159,6 @@
           <dc:Bounds x="711" y="153" width="78" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Association_1mhrbk0_di" bpmnElement="Association_1mhrbk0">
-        <di:waypoint x="360" y="315" />
-        <di:waypoint x="360" y="370" />
-      </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>

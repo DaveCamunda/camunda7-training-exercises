@@ -1,36 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0fhu9pj" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.17.0">
-  <bpmn:process id="PaymentProcess" name="Payment Process" isExecutable="true">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0fhu9pj" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.17.0">
+  <bpmn:process id="PaymentProcess" name="Payment" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1" name="Payment Requested">
       <bpmn:outgoing>Flow_0y3yts5</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:sequenceFlow id="Flow_0y3yts5" sourceRef="StartEvent_1" targetRef="Activity_1h9jjnm" />
+    <bpmn:sequenceFlow id="Flow_0y3yts5" sourceRef="StartEvent_1" targetRef="DeductCreditTask" />
     <bpmn:exclusiveGateway id="Gateway_08b9bsy" name="Credit Sufficient?">
       <bpmn:incoming>Flow_1pjrnka</bpmn:incoming>
       <bpmn:outgoing>Flow_0j2udb5</bpmn:outgoing>
       <bpmn:outgoing>Flow_0etkvdo</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:sequenceFlow id="Flow_1pjrnka" sourceRef="Activity_1h9jjnm" targetRef="Gateway_08b9bsy" />
-    <bpmn:sequenceFlow id="Flow_0j2udb5" name="No" sourceRef="Gateway_08b9bsy" targetRef="Activity_0s0m6l6" />
+    <bpmn:sequenceFlow id="Flow_1pjrnka" sourceRef="DeductCreditTask" targetRef="Gateway_08b9bsy" />
+    <bpmn:sequenceFlow id="Flow_0j2udb5" name="No" sourceRef="Gateway_08b9bsy" targetRef="ChargeCreditCardTask">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{orderTotal &gt; customerCredit}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
     <bpmn:exclusiveGateway id="Gateway_146t6fq">
       <bpmn:incoming>Flow_1tv5m9b</bpmn:incoming>
       <bpmn:incoming>Flow_0etkvdo</bpmn:incoming>
       <bpmn:outgoing>Flow_0esyvqc</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:sequenceFlow id="Flow_1tv5m9b" sourceRef="Activity_0s0m6l6" targetRef="Gateway_146t6fq" />
-    <bpmn:endEvent id="Event_1fizr6q" name="Payment Completed">
+    <bpmn:sequenceFlow id="Flow_1tv5m9b" sourceRef="ChargeCreditCardTask" targetRef="Gateway_146t6fq" />
+    <bpmn:endEvent id="PaymentCompletedEvent" name="Payment Completed">
       <bpmn:incoming>Flow_0esyvqc</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0esyvqc" sourceRef="Gateway_146t6fq" targetRef="Event_1fizr6q" />
-    <bpmn:sequenceFlow id="Flow_0etkvdo" name="Yes" sourceRef="Gateway_08b9bsy" targetRef="Gateway_146t6fq" />
-    <bpmn:task id="Activity_1h9jjnm" name="Deduct Customer Credit">
+    <bpmn:sequenceFlow id="Flow_0esyvqc" sourceRef="Gateway_146t6fq" targetRef="PaymentCompletedEvent" />
+    <bpmn:sequenceFlow id="Flow_0etkvdo" name="Yes" sourceRef="Gateway_08b9bsy" targetRef="Gateway_146t6fq">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{orderTotal &lt;= customerCredit}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="DeductCreditTask" name="Deduct Customer Credit" camunda:type="external" camunda:topic="creditDeduction">
       <bpmn:incoming>Flow_0y3yts5</bpmn:incoming>
       <bpmn:outgoing>Flow_1pjrnka</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:task id="Activity_0s0m6l6" name="Charge Credit Card">
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ChargeCreditCardTask" name="Charge Credit Card" camunda:type="external" camunda:topic="creditCardCharging">
       <bpmn:incoming>Flow_0j2udb5</bpmn:incoming>
       <bpmn:outgoing>Flow_1tv5m9b</bpmn:outgoing>
-    </bpmn:task>
+    </bpmn:serviceTask>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="PaymentProcess">
@@ -81,16 +85,16 @@
       <bpmndi:BPMNShape id="Gateway_146t6fq_di" bpmnElement="Gateway_146t6fq" isMarkerVisible="true">
         <dc:Bounds x="725" y="152" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1fizr6q_di" bpmnElement="Event_1fizr6q">
+      <bpmndi:BPMNShape id="Event_1fizr6q_di" bpmnElement="PaymentCompletedEvent">
         <dc:Bounds x="842" y="159" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="833" y="202" width="54" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1kdcp4x_di" bpmnElement="Activity_1h9jjnm">
+      <bpmndi:BPMNShape id="Activity_1f4x845_di" bpmnElement="DeductCreditTask">
         <dc:Bounds x="280" y="137" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_01dvppt_di" bpmnElement="Activity_0s0m6l6">
+      <bpmndi:BPMNShape id="Activity_0xce1fs_di" bpmnElement="ChargeCreditCardTask">
         <dc:Bounds x="560" y="137" width="100" height="80" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
