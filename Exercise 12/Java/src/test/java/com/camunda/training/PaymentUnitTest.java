@@ -46,7 +46,19 @@ public class PaymentUnitTest {
 		
 	    externalTaskService().handleBpmnError(externalTask().getId(), "junit-test-worker", "creditCardChargeError");
 	    
-	    assertThat(processInstance).isWaitingAt("PaymentFailedEvent").externalTask().hasTopicName("paymentCompletion");
+		assertThat(processInstance).isWaitingAt("CheckPaymentUserTask");
+		
+		complete(task(), withVariables("errorResolved", true));
+		
+		assertThat(processInstance).isWaitingAt("ChargeCreditCardTask");
+		
+		complete(externalTask());
+	    
+	    assertThat(processInstance).isWaitingAt("PaymentCompletedEvent").externalTask().hasTopicName("paymentCompletion");
+	    
+	    complete(externalTask());
+	    
+	    assertThat(processInstance).isEnded().hasPassed("PaymentCompletedEvent");
 	    
 	}
 	
@@ -63,7 +75,19 @@ public class PaymentUnitTest {
 		
 		externalTaskService().handleBpmnError(externalTask().getId(), "junit-test-worker", "creditCardChargeError");
 		
+		assertThat(processInstance).isWaitingAt("CheckPaymentUserTask");
+		
+		complete(task(), withVariables("errorResolved", false));
+		
 		assertThat(processInstance).isWaitingAt("CreditRestoredEvent", "RestoreCreditTask").externalTask().hasTopicName("creditRestore");
+		
+		complete(externalTask());
+		
+	    assertThat(processInstance).isWaitingAt("PaymentFailedEvent").externalTask().hasTopicName("paymentCompletion");
+	    
+	    complete(externalTask());
+		
+		assertThat(processInstance).isEnded().hasPassed("PaymentFailedEvent");
 	    
 	}
 

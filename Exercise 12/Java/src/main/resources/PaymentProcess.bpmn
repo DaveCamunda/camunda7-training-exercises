@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0fhu9pj" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.17.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0fhu9pj" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.3.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.17.0">
   <bpmn:process id="PaymentProcess" name="Payment" isExecutable="true">
     <bpmn:sequenceFlow id="Flow_0y3yts5" sourceRef="StartEvent_1" targetRef="DeductCreditTask" />
     <bpmn:exclusiveGateway id="Gateway_08b9bsy" name="Credit Sufficient?">
@@ -41,7 +41,7 @@
       <bpmn:outgoing>Flow_1694twp</bpmn:outgoing>
       <bpmn:errorEventDefinition id="ErrorEventDefinition_1ekygct" errorRef="Error_0pewlkm" camunda:errorCodeVariable="errorCode" camunda:errorMessageVariable="errorMessage" />
     </bpmn:boundaryEvent>
-    <bpmn:sequenceFlow id="Flow_1694twp" sourceRef="Event_1tabma4" targetRef="Activity_1abtvrh" />
+    <bpmn:sequenceFlow id="Flow_1694twp" sourceRef="Event_1tabma4" targetRef="CheckPaymentUserTask" />
     <bpmn:endEvent id="PaymentFailedEvent" name="Payment Failed">
       <bpmn:incoming>Flow_1jedhoe</bpmn:incoming>
       <bpmn:messageEventDefinition id="MessageEventDefinition_1uzyxwq" messageRef="Message_2vi4rpt" camunda:type="external" camunda:topic="paymentCompletion" />
@@ -56,8 +56,8 @@
       <bpmn:compensateEventDefinition id="CompensateEventDefinition_1rrfin1" />
     </bpmn:boundaryEvent>
     <bpmn:serviceTask id="RestoreCreditTask" name="Restore Customer Credit" isForCompensation="true" camunda:type="external" camunda:topic="creditRestore" />
-    <bpmn:sequenceFlow id="Flow_1nwfdwa" sourceRef="Activity_1abtvrh" targetRef="Gateway_1to0zns" />
-    <bpmn:userTask id="Activity_1abtvrh" name="Check Failed Payment Data" camunda:formRef="checkPaymentDataForm" camunda:formRefBinding="latest" camunda:candidateGroups="accounting">
+    <bpmn:sequenceFlow id="Flow_1nwfdwa" sourceRef="CheckPaymentUserTask" targetRef="Gateway_1to0zns" />
+    <bpmn:userTask id="CheckPaymentUserTask" name="Check Failed Payment Data" camunda:formRef="checkPaymentDataForm" camunda:formRefBinding="latest" camunda:candidateGroups="accounting">
       <bpmn:incoming>Flow_1694twp</bpmn:incoming>
       <bpmn:outgoing>Flow_1nwfdwa</bpmn:outgoing>
     </bpmn:userTask>
@@ -86,70 +86,6 @@
   <bpmn:message id="Message_2vi4rpt" name="paymentCompletion" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="PaymentProcess">
-      <bpmndi:BPMNEdge id="Flow_1iqgzv7_di" bpmnElement="Flow_1iqgzv7">
-        <di:waypoint x="970" y="185" />
-        <di:waypoint x="970" y="80" />
-        <di:waypoint x="650" y="80" />
-        <di:waypoint x="650" y="362" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="981" y="133" width="18" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_04d804x_di" bpmnElement="Flow_04d804x">
-        <di:waypoint x="675" y="387" />
-        <di:waypoint x="750" y="387" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1mumdrr_di" bpmnElement="Flow_1mumdrr">
-        <di:waypoint x="995" y="210" />
-        <di:waypoint x="1092" y="210" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1032" y="192" width="15" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1nwfdwa_di" bpmnElement="Flow_1nwfdwa">
-        <di:waypoint x="850" y="210" />
-        <di:waypoint x="945" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1jedhoe_di" bpmnElement="Flow_1jedhoe">
-        <di:waypoint x="1128" y="210" />
-        <di:waypoint x="1232" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1694twp_di" bpmnElement="Flow_1694twp">
-        <di:waypoint x="800" y="329" />
-        <di:waypoint x="800" y="250" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0etkvdo_di" bpmnElement="Flow_0etkvdo">
-        <di:waypoint x="530" y="412" />
-        <di:waypoint x="530" y="540" />
-        <di:waypoint x="970" y="540" />
-        <di:waypoint x="970" y="412" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="574" y="523" width="18" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0esyvqc_di" bpmnElement="Flow_0esyvqc">
-        <di:waypoint x="995" y="387" />
-        <di:waypoint x="1092" y="387" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1tv5m9b_di" bpmnElement="Flow_1tv5m9b">
-        <di:waypoint x="850" y="387" />
-        <di:waypoint x="945" y="387" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0j2udb5_di" bpmnElement="Flow_0j2udb5">
-        <di:waypoint x="555" y="387" />
-        <di:waypoint x="625" y="387" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="568" y="369" width="15" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1pjrnka_di" bpmnElement="Flow_1pjrnka">
-        <di:waypoint x="410" y="387" />
-        <di:waypoint x="505" y="387" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0y3yts5_di" bpmnElement="Flow_0y3yts5">
-        <di:waypoint x="215" y="387" />
-        <di:waypoint x="310" y="387" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Gateway_08b9bsy_di" bpmnElement="Gateway_08b9bsy" isMarkerVisible="true">
         <dc:Bounds x="505" y="362" width="50" height="50" />
         <bpmndi:BPMNLabel>
@@ -192,7 +128,7 @@
       <bpmndi:BPMNShape id="Activity_0dfrgmv_di" bpmnElement="RestoreCreditTask">
         <dc:Bounds x="310" y="500" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1062kny_di" bpmnElement="Activity_1abtvrh">
+      <bpmndi:BPMNShape id="Activity_1062kny_di" bpmnElement="CheckPaymentUserTask">
         <dc:Bounds x="750" y="170" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
@@ -214,6 +150,70 @@
           <dc:Bounds x="821" y="313" width="78" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0y3yts5_di" bpmnElement="Flow_0y3yts5">
+        <di:waypoint x="215" y="387" />
+        <di:waypoint x="310" y="387" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1pjrnka_di" bpmnElement="Flow_1pjrnka">
+        <di:waypoint x="410" y="387" />
+        <di:waypoint x="505" y="387" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0j2udb5_di" bpmnElement="Flow_0j2udb5">
+        <di:waypoint x="555" y="387" />
+        <di:waypoint x="625" y="387" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="568" y="369" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1tv5m9b_di" bpmnElement="Flow_1tv5m9b">
+        <di:waypoint x="850" y="387" />
+        <di:waypoint x="945" y="387" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0esyvqc_di" bpmnElement="Flow_0esyvqc">
+        <di:waypoint x="995" y="387" />
+        <di:waypoint x="1092" y="387" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0etkvdo_di" bpmnElement="Flow_0etkvdo">
+        <di:waypoint x="530" y="412" />
+        <di:waypoint x="530" y="540" />
+        <di:waypoint x="970" y="540" />
+        <di:waypoint x="970" y="412" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="574" y="523" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1694twp_di" bpmnElement="Flow_1694twp">
+        <di:waypoint x="800" y="329" />
+        <di:waypoint x="800" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1jedhoe_di" bpmnElement="Flow_1jedhoe">
+        <di:waypoint x="1128" y="210" />
+        <di:waypoint x="1232" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1nwfdwa_di" bpmnElement="Flow_1nwfdwa">
+        <di:waypoint x="850" y="210" />
+        <di:waypoint x="945" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1mumdrr_di" bpmnElement="Flow_1mumdrr">
+        <di:waypoint x="995" y="210" />
+        <di:waypoint x="1092" y="210" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1032" y="192" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_04d804x_di" bpmnElement="Flow_04d804x">
+        <di:waypoint x="675" y="387" />
+        <di:waypoint x="750" y="387" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1iqgzv7_di" bpmnElement="Flow_1iqgzv7">
+        <di:waypoint x="970" y="185" />
+        <di:waypoint x="970" y="80" />
+        <di:waypoint x="650" y="80" />
+        <di:waypoint x="650" y="362" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="981" y="133" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Association_1mhrbk0_di" bpmnElement="Association_1mhrbk0">
         <di:waypoint x="360" y="445" />
         <di:waypoint x="360" y="500" />
